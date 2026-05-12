@@ -1,0 +1,100 @@
+<mxfile host="app.diagrams.net" type="device">
+  <diagram id="as-is" name="as-is">
+    <mxGraphModel dx="1800" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="700" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+        <mxCell id="title" value="AS-IS Process: Org gives away free items on campus (today, without the system)" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;fontSize=16;fontStyle=1;" vertex="1" parent="1">
+          <mxGeometry x="30" y="10" width="1540" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_org" value="Student Org Rep" style="swimlane;whiteSpace=wrap;html=1;startSize=30;horizontal=0;fillColor=#FAFAFA;strokeColor=#5F6368;fontSize=12;fontFamily=Helvetica;fontStyle=1;swimlaneFillColor=#FAFAFA;" vertex="1" parent="1">
+          <mxGeometry x="30" y="60" width="1500" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="lane_stu" value="Student" style="swimlane;whiteSpace=wrap;html=1;startSize=30;horizontal=0;fillColor=#FAFAFA;strokeColor=#5F6368;fontSize=12;fontFamily=Helvetica;fontStyle=1;swimlaneFillColor=#FAFAFA;" vertex="1" parent="1">
+          <mxGeometry x="30" y="300" width="1500" height="240" as="geometry" />
+        </mxCell>
+        <mxCell id="e_start" value="Free items available" style="ellipse;whiteSpace=wrap;html=1;fillColor=#A8E6A1;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="110" y="168" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="a1" value="Decide to give away free items&lt;br/&gt;&lt;b style=&#x27;color:#28A745&#x27;&gt;[VA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4EDDA;strokeColor=#28A745;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="180" y="150" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a2" value="Create flyer or social post&lt;br/&gt;&lt;b style=&#x27;color:#28A745&#x27;&gt;[VA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4EDDA;strokeColor=#28A745;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="360" y="150" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a3" value="Post to Snap, IG, flyers&lt;br/&gt;&lt;b style=&#x27;color:#DC3545&#x27;&gt;[NVA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8D7DA;strokeColor=#DC3545;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="540" y="150" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a4" value="Physically distribute flyers&lt;br/&gt;&lt;b style=&#x27;color:#DC3545&#x27;&gt;[NVA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8D7DA;strokeColor=#DC3545;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="720" y="150" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a5" value="Set up giveaway at location&lt;br/&gt;&lt;b style=&#x27;color:#28A745&#x27;&gt;[VA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4EDDA;strokeColor=#28A745;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="900" y="150" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a6" value="Notice flyer or post by chance&lt;br/&gt;&lt;b style=&#x27;color:#F5A623&#x27;&gt;[BVA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3CD;strokeColor=#F5A623;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="360" y="390" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a7" value="Wonder if items still available&lt;br/&gt;&lt;b style=&#x27;color:#DC3545&#x27;&gt;[NVA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8D7DA;strokeColor=#DC3545;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="540" y="390" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="gw1" value="Walk over?" style="rhombus;whiteSpace=wrap;html=1;fillColor=#FFF7E6;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="730" y="401" width="40" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="a8" value="Walk to location&lt;br/&gt;&lt;b style=&#x27;color:#F5A623&#x27;&gt;[BVA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#FFF3CD;strokeColor=#F5A623;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="830" y="350" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="a9" value="Claim item&lt;br/&gt;&lt;b style=&#x27;color:#28A745&#x27;&gt;[VA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#D4EDDA;strokeColor=#28A745;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1010" y="350" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_end_ok" value="Success" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5B7B1;strokeColor=#A93226;strokeWidth=3;fontSize=10;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1200" y="368" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="a10" value="Find items already gone&lt;br/&gt;&lt;b style=&#x27;color:#DC3545&#x27;&gt;[NVA]&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#F8D7DA;strokeColor=#DC3545;strokeWidth=1.5;fontSize=11;fontFamily=Helvetica;arcSize=20;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="830" y="450" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="e_end_bad" value="Wasted trip" style="ellipse;whiteSpace=wrap;html=1;fillColor=#F5B7B1;strokeColor=#A93226;strokeWidth=3;fontSize=10;fontFamily=Helvetica;align=center;verticalAlign=middle;" vertex="1" parent="1">
+          <mxGeometry x="1030" y="470" width="28" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="f1" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="e_start" target="a1">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f2" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a1" target="a2">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f3" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a2" target="a3">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f4" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a3" target="a4">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f5" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a4" target="a5">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f6" value="items arrive at location" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;dashed=1;dashPattern=5 3;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a5" target="a6">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f7" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a6" target="a7">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f8" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a7" target="gw1">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f9" value="yes" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="gw1" target="a8">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f10" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a8" target="a9">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f11" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a9" target="e_end_ok">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f12" value="no" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="gw1" target="a10">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+        <mxCell id="f13" value="" style="endArrow=classic;html=1;rounded=0;strokeColor=#5F6368;strokeWidth=1.5;fontSize=10;fontFamily=Helvetica;edgeStyle=orthogonalEdgeStyle;" edge="1" parent="1" source="a10" target="e_end_bad">
+          <mxGeometry relative="1" as="geometry"></mxGeometry>
+        </mxCell>
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
