@@ -74,7 +74,7 @@
   --radius: .5rem; 
   --spacing: 0.25rem;
 
-  --background: 40 20% 98%;
+  --background: 0 0% 100%;
   --foreground: 222 47% 11%;
   --primary: 213 100% 36%;
   --primary-foreground: 0 0% 100%;
@@ -135,4 +135,12 @@
   body {
     @apply font-sans antialiased bg-background text-foreground;
   }
+}
+
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
