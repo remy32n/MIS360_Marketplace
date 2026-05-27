@@ -26,7 +26,8 @@ api.interceptors.request.use((config) => {
 api.interceptors.response.use(
   (res) => res,
   (err) => {
-    if (err.response?.status === 401 && window.location.pathname !== '/login') {
+    const publicPaths = ['/login', '/signup'];
+    if (err.response?.status === 401 && !publicPaths.includes(window.location.pathname)) {
       tokenStore.clear();
       window.location.href = '/login';
     }

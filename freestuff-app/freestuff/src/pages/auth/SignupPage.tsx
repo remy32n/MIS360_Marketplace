@@ -48,7 +48,7 @@ export function SignupPage() {
     try {
       await authAPI.signup({
         ...formData,
-        role: accountType
+        accountType,
       });
       toast({
         title: "Account created!",

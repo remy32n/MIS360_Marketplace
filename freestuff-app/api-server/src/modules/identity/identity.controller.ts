@@ -22,8 +22,8 @@ export const identityController = {
         sendError(res, 400, "Account type must be STUDENT or ORG.");
         return;
       }
-      if (accountType === "ORG" && (!orgName || !orgType || !contactEmail)) {
-        sendError(res, 400, "Organization name, type, and contact email are required for org accounts.");
+      if (accountType === "ORG" && (!orgName || !orgType)) {
+        sendError(res, 400, "Organization name and type are required for org accounts.");
         return;
       }
 
