@@ -1,8 +1,25 @@
 import axios from 'axios';
 
+const TOKEN_KEY = 'fs_auth_token';
+
+export const tokenStore = {
+  get: () => localStorage.getItem(TOKEN_KEY),
+  set: (token: string) => localStorage.setItem(TOKEN_KEY, token),
+  clear: () => localStorage.removeItem(TOKEN_KEY),
+};
+
 const api = axios.create({
   baseURL: '/api',
   withCredentials: true,
+});
+
+// Attach Bearer token from localStorage on every request
+api.interceptors.request.use((config) => {
+  const token = tokenStore.get();
+  if (token) {
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+  return config;
 });
 
 // 401 interceptor — clear local state and redirect to login
@@ -10,6 +27,7 @@ api.interceptors.response.use(
   (res) => res,
   (err) => {
     if (err.response?.status === 401 && window.location.pathname !== '/login') {
+      tokenStore.clear();
       window.location.href = '/login';
     }
     return Promise.reject(err);

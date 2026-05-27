@@ -1,5 +1,5 @@
 import React, { createContext, useState, useEffect, ReactNode } from 'react';
-import { authAPI } from '../services/api';
+import { authAPI, tokenStore } from '../services/api';
 
 type UserRole = 'STUDENT' | 'ORG' | 'ADMIN';
 
@@ -55,6 +55,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
   const login = async (email: string, password: string) => {
     const response = await authAPI.login(email, password);
+    if (response.data.token) {
+      tokenStore.set(response.data.token);
+    }
     const u = response.data.user ?? response.data;
     const o = response.data.org ?? null;
     setUser(u);
@@ -66,6 +69,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     try {
       await authAPI.logout();
     } finally {
+      tokenStore.clear();
       setUser(null);
       setOrg(null);
       window.location.href = '/login';

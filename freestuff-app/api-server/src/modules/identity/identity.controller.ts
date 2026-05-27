@@ -88,12 +88,13 @@ export const identityController = {
 
       res.cookie("auth_token", token, {
         httpOnly: true,
-        secure: process.env["NODE_ENV"] === "production",
-        sameSite: "lax",
+        secure: true,
+        sameSite: "none",
         maxAge: 3600 * 1000,
       });
 
       res.json({
+        token,
         user: { id: user.id, firstName: user.firstName, lastName: user.lastName, email: user.email, role: user.role },
         org: orgMembership ? {
           id: orgMembership.org.id,

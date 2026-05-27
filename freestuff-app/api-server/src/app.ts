@@ -7,6 +7,9 @@ import { logger } from "./lib/logger.js";
 
 const app: Express = express();
 
+// Trust the Replit/Vite reverse proxy so rate-limiting and cookie-secure work correctly
+app.set("trust proxy", 1);
+
 const allowedOrigins = process.env["NODE_ENV"] === "production"
   ? (process.env["REPLIT_DOMAINS"] || "").split(",").map(d => `https://${d.trim()}`).filter(Boolean)
   : ["http://localhost:5173", "http://localhost:26210"];

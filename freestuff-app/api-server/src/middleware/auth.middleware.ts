@@ -5,7 +5,13 @@ import { sendError } from "../utils/errors.js";
 
 export async function requireAuth(req: Request, res: Response, next: NextFunction): Promise<void> {
   try {
-    const token = req.cookies?.auth_token;
+    let token = req.cookies?.auth_token;
+    if (!token) {
+      const authHeader = req.headers.authorization;
+      if (authHeader?.startsWith("Bearer ")) {
+        token = authHeader.slice(7);
+      }
+    }
     if (!token) {
       sendError(res, 401, "Authentication required.");
       return;
