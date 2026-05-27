@@ -1,0 +1,164 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ── Identity & Access Module ──────────────────────────────────────────────
+
+model User {
+  id                 String    @id @default(uuid())
+  email              String    @unique
+  passwordHash       String
+  firstName          String
+  lastName           String
+  role               Role      @default(STUDENT)
+  isActive           Boolean   @default(true)
+  createdAt          DateTime  @default(now())
+
+  orgMemberships     OrgMembership[]
+  savedListings      SavedListing[]
+  notifications      Notification[]
+  listings           Listing[]
+
+  @@map("users")
+}
+
+model StudentOrg {
+  id                 String             @id @default(uuid())
+  orgName            String
+  orgType            OrgType
+  contactEmail       String
+  verificationStatus VerificationStatus @default(PENDING)
+  verifiedAt         DateTime?
+  createdAt          DateTime           @default(now())
+
+  memberships        OrgMembership[]
+  listings           Listing[]
+
+  @@map("student_orgs")
+}
+
+model OrgMembership {
+  id          String   @id @default(uuid())
+  userId      String
+  orgId       String
+  roleInOrg   String   @default("member")
+  joinedAt    DateTime @default(now())
+
+  user        User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  org         StudentOrg @relation(fields: [orgId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, orgId])
+  @@map("org_memberships")
+}
+
+// ── Listings Module ────────────────────────────────────────────────────────
+
+model Listing {
+  id             String        @id @default(uuid())
+  postedByUserId String
+  postedByOrgId  String?
+  title          String
+  description    String
+  posterImageUrl String?
+  buildingName   String
+  roomOrFloor    String
+  category       Category
+  startTime      DateTime
+  endTime        DateTime
+  status         ListingStatus @default(PENDING)
+  viewCount      Int           @default(0)
+  saveCount      Int           @default(0)
+  createdAt      DateTime      @default(now())
+  updatedAt      DateTime      @updatedAt
+
+  postedBy       User          @relation(fields: [postedByUserId], references: [id])
+  postedByOrg    StudentOrg?   @relation(fields: [postedByOrgId], references: [id])
+  savedBy        SavedListing[]
+  notifications  Notification[]
+
+  @@map("listings")
+}
+
+// ── Engagement Module ────────────────────────────────────────────────────
+
+model SavedListing {
+  id        String   @id @default(uuid())
+  userId    String
+  listingId String
+  savedAt   DateTime @default(now())
+
+  user      User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing   Listing @relation(fields: [listingId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, listingId])
+  @@map("saved_listings")
+}
+
+model Notification {
+  id               String              @id @default(uuid())
+  userId           String
+  listingId        String?
+  notificationType NotificationType
+  message          String
+  channel          NotificationChannel @default(IN_APP)
+  sentAt           DateTime            @default(now())
+  readAt           DateTime?
+
+  user    User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  listing Listing? @relation(fields: [listingId], references: [id], onDelete: SetNull)
+
+  @@map("notifications")
+}
+
+// ── Enums ────────────────────────────────────────────────────────────────
+
+enum Role {
+  STUDENT
+  ORG
+  ADMIN
+}
+
+enum OrgType {
+  STUDENT_ORG
+  UNIV_DEPT
+  FACULTY_STAFF
+}
+
+enum VerificationStatus {
+  PENDING
+  VERIFIED
+  REJECTED
+}
+
+enum Category {
+  FOOD
+  DRINKS
+  APPAREL
+  SUPPLIES
+  OTHER
+}
+
+enum ListingStatus {
+  PENDING
+  APPROVED
+  ACTIVE
+  EXPIRED
+  REMOVED
+}
+
+enum NotificationType {
+  NEW_LISTING
+  LISTING_APPROVED
+  LISTING_REJECTED
+  EXPIRING_SOON
+}
+
+enum NotificationChannel {
+  IN_APP
+  EMAIL
+  PUSH
+}
