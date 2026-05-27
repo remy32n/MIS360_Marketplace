@@ -1,27 +1,25 @@
-import React from 'react';
+import React, { useState } from 'react';
 import {
   View, Text, FlatList, StyleSheet, TouchableOpacity,
-  Alert, RefreshControl, Platform,
+  Alert, RefreshControl, Platform, ScrollView,
 } from 'react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
-import * as Haptics from 'expo-haptics';
 import { useColors } from '@/hooks/useColors';
 import { apiRequest } from '@/lib/queryClient';
+import { ListingBadge } from '@/components/ListingBadge';
+import { timeAgo } from '@/utils/formatters';
 
-const STATUS_COLORS: Record<string, string> = {
-  ACTIVE: '#22c55e',
-  PENDING: '#f59e0b',
-  REJECTED: '#ef4444',
-  EXPIRED: '#9ca3af',
-};
+type StatusFilter = 'ALL' | 'PENDING' | 'ACTIVE' | 'EXPIRED' | 'REMOVED' | 'REJECTED';
+const STATUS_FILTERS: StatusFilter[] = ['ALL', 'PENDING', 'ACTIVE', 'EXPIRED', 'REMOVED', 'REJECTED'];
 
 export default function ListingsScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
   const topPad = insets.top + (Platform.OS === 'web' ? 67 : 0);
+  const [statusFilter, setStatusFilter] = useState<StatusFilter>('ALL');
 
   const { data, isLoading, refetch, isRefetching } = useQuery({
     queryKey: ['/api/listings/mine'],
@@ -29,18 +27,26 @@ export default function ListingsScreen() {
 
   const deleteMutation = useMutation({
     mutationFn: (id: string) => apiRequest('DELETE', `/api/listings/${id}`),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ['/api/listings/mine'] });
-      Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    },
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['/api/listings/mine'] }),
   });
 
-  const listings: any[] = data?.listings ?? (Array.isArray(data) ? data : []);
+  const allListings: any[] = data?.listings ?? (Array.isArray(data) ? data : []);
+
+  const listings = allListings.filter(l => {
+    if (statusFilter === 'ALL') return true;
+    if (statusFilter === 'ACTIVE') {
+      return l.status === 'ACTIVE' && new Date(l.endTime).getTime() > Date.now();
+    }
+    if (statusFilter === 'EXPIRED') {
+      return l.status === 'EXPIRED' || (l.status === 'ACTIVE' && new Date(l.endTime).getTime() <= Date.now());
+    }
+    return l.status === statusFilter;
+  });
 
   const confirmDelete = (id: string, title: string) => {
-    Alert.alert('Delete Listing', `Remove "${title}"?`, [
+    Alert.alert('Remove Listing', `Remove "${title}"?`, [
       { text: 'Cancel', style: 'cancel' },
-      { text: 'Delete', style: 'destructive', onPress: () => deleteMutation.mutate(id) },
+      { text: 'Remove', style: 'destructive', onPress: () => deleteMutation.mutate(id) },
     ]);
   };
 
@@ -48,10 +54,26 @@ export default function ListingsScreen() {
     <View style={[styles.root, { backgroundColor: colors.background }]}>
       <View style={[styles.header, { paddingTop: topPad + 12 }]}>
         <Text style={[styles.title, { color: colors.foreground }]}>My Listings</Text>
-        <Text style={[styles.count, { color: colors.mutedForeground }]}>
-          {listings.length} total
-        </Text>
+        <Text style={[styles.count, { color: colors.mutedForeground }]}>{allListings.length} total</Text>
       </View>
+
+      <ScrollView
+        horizontal
+        showsHorizontalScrollIndicator={false}
+        contentContainerStyle={styles.filterRow}
+      >
+        {STATUS_FILTERS.map(f => (
+          <TouchableOpacity
+            key={f}
+            style={[styles.filterBtn, statusFilter === f && { backgroundColor: colors.foreground }]}
+            onPress={() => setStatusFilter(f)}
+          >
+            <Text style={[styles.filterTxt, { color: statusFilter === f ? colors.background : colors.mutedForeground }]}>
+              {f}
+            </Text>
+          </TouchableOpacity>
+        ))}
+      </ScrollView>
 
       <FlatList
         data={listings}
@@ -69,18 +91,19 @@ export default function ListingsScreen() {
                 <Text style={[styles.itemTitle, { color: colors.foreground }]} numberOfLines={1}>
                   {item.title}
                 </Text>
-                <View style={[styles.statusBadge, { backgroundColor: STATUS_COLORS[item.status] + '22' }]}>
-                  <Text style={[styles.statusTxt, { color: STATUS_COLORS[item.status] }]}>
-                    {item.status}
-                  </Text>
-                </View>
+                <ListingBadge status={item.status} />
               </View>
               <Text style={[styles.meta, { color: colors.mutedForeground }]}>
                 {item.buildingName}{item.roomOrFloor ? ` · ${item.roomOrFloor}` : ''}
               </Text>
               <Text style={[styles.meta, { color: colors.mutedForeground }]}>
-                {item.saveCount ?? 0} saves · ends {new Date(item.endTime).toLocaleDateString()}
+                {item.saveCount ?? 0} saves · {timeAgo(item.createdAt)}
               </Text>
+              {item.status === 'REJECTED' && item.rejectionReason && (
+                <Text style={styles.rejectedReason} numberOfLines={2}>
+                  Reason: {item.rejectionReason}
+                </Text>
+              )}
             </View>
             <TouchableOpacity
               style={styles.deleteBtn}
@@ -94,9 +117,11 @@ export default function ListingsScreen() {
           !isLoading ? (
             <View style={styles.empty}>
               <Ionicons name="list-outline" size={52} color={colors.border} />
-              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>No listings yet</Text>
+              <Text style={[styles.emptyTitle, { color: colors.foreground }]}>
+                {statusFilter === 'ALL' ? 'No listings yet' : `No ${statusFilter.toLowerCase()} listings`}
+              </Text>
               <Text style={[styles.emptySub, { color: colors.mutedForeground }]}>
-                Post your first free giveaway from the Post tab
+                {statusFilter === 'ALL' ? 'Post your first free giveaway from the Post tab' : 'Try a different filter'}
               </Text>
             </View>
           ) : null
@@ -112,21 +137,25 @@ const styles = StyleSheet.create({
     flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between',
     paddingHorizontal: 16, paddingBottom: 12,
   },
-  title: { fontSize: 26, fontWeight: '700', fontFamily: 'DM_Sans_700Bold' },
-  count: { fontSize: 14, fontFamily: 'DM_Sans_400Regular' },
+  title: { fontSize: 26, fontWeight: '700' },
+  count: { fontSize: 14 },
+  filterRow: { paddingHorizontal: 16, paddingBottom: 12, gap: 8, flexDirection: 'row' },
+  filterBtn: {
+    paddingHorizontal: 14, paddingVertical: 7, borderRadius: 20, backgroundColor: '#f3f4f6',
+  },
+  filterTxt: { fontSize: 12, fontWeight: '600' },
   list: { paddingBottom: 32 },
   sep: { height: StyleSheet.hairlineWidth, marginLeft: 16 },
   row: {
     flexDirection: 'row', alignItems: 'center', paddingHorizontal: 16, paddingVertical: 14, gap: 12,
   },
-  rowContent: { flex: 1, gap: 3 },
+  rowContent: { flex: 1, gap: 4 },
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8, flexWrap: 'wrap' },
-  itemTitle: { fontSize: 15, fontWeight: '600', fontFamily: 'DM_Sans_600SemiBold', flex: 1 },
-  statusBadge: { paddingHorizontal: 8, paddingVertical: 3, borderRadius: 8 },
-  statusTxt: { fontSize: 11, fontWeight: '600', fontFamily: 'DM_Sans_600SemiBold' },
-  meta: { fontSize: 13, fontFamily: 'DM_Sans_400Regular' },
+  itemTitle: { fontSize: 15, fontWeight: '600', flex: 1 },
+  meta: { fontSize: 13 },
+  rejectedReason: { fontSize: 12, color: '#dc2626', marginTop: 2 },
   deleteBtn: { padding: 8 },
   empty: { alignItems: 'center', paddingTop: 72, paddingHorizontal: 32, gap: 8 },
-  emptyTitle: { fontSize: 18, fontWeight: '700', fontFamily: 'DM_Sans_700Bold', marginTop: 8 },
-  emptySub: { fontSize: 14, fontFamily: 'DM_Sans_400Regular', textAlign: 'center' },
+  emptyTitle: { fontSize: 18, fontWeight: '700', marginTop: 8 },
+  emptySub: { fontSize: 14, textAlign: 'center' },
 });

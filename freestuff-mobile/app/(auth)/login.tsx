@@ -6,7 +6,6 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { router } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
-import * as Haptics from 'expo-haptics';
 import { useAuth } from '@/hooks/useAuth';
 import { useColors } from '@/hooks/useColors';
 
@@ -20,7 +19,6 @@ export default function LoginScreen() {
   const [showPass, setShowPass] = useState(false);
 
   const topPad = insets.top + (Platform.OS === 'web' ? 67 : 0);
-  const botPad = insets.bottom + (Platform.OS === 'web' ? 34 : 0);
 
   const handleLogin = async () => {
     if (!email.endsWith('@depaul.edu')) {
@@ -33,11 +31,15 @@ export default function LoginScreen() {
     }
     setIsLoading(true);
     try {
-      await login(email.trim().toLowerCase(), password);
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-      router.replace('/(app)');
+      const { user } = await login(email.trim().toLowerCase(), password);
+      if (user?.role === 'ADMIN') {
+        router.replace('/(app)/index');
+      } else if (user?.role === 'ORG') {
+        router.replace('/(app)/listings');
+      } else {
+        router.replace('/(app)/index');
+      }
     } catch (err: any) {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert('Login Failed', err?.response?.data?.message ?? 'Invalid credentials. Please try again.');
     } finally {
       setIsLoading(false);
@@ -50,11 +52,10 @@ export default function LoginScreen() {
       behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
     >
       <ScrollView
-        contentContainerStyle={[styles.content, { paddingTop: topPad + 40, paddingBottom: botPad + 24 }]}
+        contentContainerStyle={[styles.content, { paddingTop: topPad + 40, paddingBottom: 40 }]}
         keyboardShouldPersistTaps="handled"
         showsVerticalScrollIndicator={false}
       >
-        {/* Logo */}
         <View style={styles.logo}>
           <View style={[styles.iconWrap, { backgroundColor: colors.muted }]}>
             <Ionicons name="gift-outline" size={36} color={colors.primary} />
@@ -65,7 +66,6 @@ export default function LoginScreen() {
           </Text>
         </View>
 
-        {/* Form */}
         <View style={styles.form}>
           <TextInput
             style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground }]}
@@ -81,7 +81,7 @@ export default function LoginScreen() {
 
           <View style={styles.passWrap}>
             <TextInput
-              style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, paddingRight: 50 }]}
+              style={[styles.input, { backgroundColor: colors.muted, color: colors.foreground, paddingRight: 50, marginBottom: 0 }]}
               placeholder="Password"
               placeholderTextColor={colors.mutedForeground}
               value={password}
@@ -109,7 +109,6 @@ export default function LoginScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Divider */}
         <View style={styles.divRow}>
           <View style={[styles.divLine, { backgroundColor: colors.border }]} />
           <Text style={[styles.divLabel, { color: colors.mutedForeground }]}>OR</Text>
@@ -131,29 +130,22 @@ const styles = StyleSheet.create({
   root: { flex: 1 },
   content: { alignItems: 'center', paddingHorizontal: 32, gap: 28 },
   logo: { alignItems: 'center', gap: 10 },
-  iconWrap: {
-    width: 80, height: 80, borderRadius: 24,
-    alignItems: 'center', justifyContent: 'center',
-  },
-  title: { fontSize: 28, fontWeight: '700', fontFamily: 'DM_Sans_700Bold' },
-  sub: { fontSize: 14, fontFamily: 'DM_Sans_400Regular', textAlign: 'center' },
+  iconWrap: { width: 80, height: 80, borderRadius: 24, alignItems: 'center', justifyContent: 'center' },
+  title: { fontSize: 28, fontWeight: '700' },
+  sub: { fontSize: 14, textAlign: 'center' },
   form: { width: '100%', gap: 12 },
   passWrap: { position: 'relative' },
   input: {
     borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 15, fontFamily: 'DM_Sans_400Regular',
+    fontSize: 15, marginBottom: 0,
   },
-  eyeBtn: {
-    position: 'absolute', right: 16, top: 0, bottom: 0, justifyContent: 'center',
-  },
-  btn: {
-    borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 4,
-  },
+  eyeBtn: { position: 'absolute', right: 16, top: 0, bottom: 0, justifyContent: 'center' },
+  btn: { borderRadius: 12, paddingVertical: 14, alignItems: 'center', marginTop: 4 },
   btnDisabled: { opacity: 0.6 },
-  btnText: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'DM_Sans_600SemiBold' },
+  btnText: { color: '#fff', fontSize: 15, fontWeight: '600' },
   divRow: { flexDirection: 'row', alignItems: 'center', gap: 12, width: '100%' },
   divLine: { flex: 1, height: StyleSheet.hairlineWidth },
-  divLabel: { fontSize: 12, fontWeight: '600', fontFamily: 'DM_Sans_600SemiBold', letterSpacing: 1 },
-  signupText: { fontSize: 14, fontFamily: 'DM_Sans_400Regular' },
-  signupLink: { fontWeight: '600', fontFamily: 'DM_Sans_600SemiBold' },
+  divLabel: { fontSize: 12, fontWeight: '600', letterSpacing: 1 },
+  signupText: { fontSize: 14 },
+  signupLink: { fontWeight: '600' },
 });

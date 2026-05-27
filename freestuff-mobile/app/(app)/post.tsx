@@ -6,16 +6,16 @@ import {
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { Ionicons } from '@expo/vector-icons';
 import { useQueryClient } from '@tanstack/react-query';
-import * as Haptics from 'expo-haptics';
 import { useColors } from '@/hooks/useColors';
+import { useAuth } from '@/hooks/useAuth';
 import { apiRequest } from '@/lib/queryClient';
 
 const CATS = [
-  { id: 'FOOD', label: 'Food', icon: 'pizza-outline' as const },
-  { id: 'DRINKS', label: 'Drinks', icon: 'cafe-outline' as const },
-  { id: 'APPAREL', label: 'Merch', icon: 'shirt-outline' as const },
-  { id: 'SUPPLIES', label: 'Supplies', icon: 'book-outline' as const },
-  { id: 'OTHER', label: 'Other', icon: 'gift-outline' as const },
+  { id: 'FOOD', label: '🍕 Food' },
+  { id: 'DRINKS', label: '🥤 Drinks' },
+  { id: 'APPAREL', label: '👕 Apparel' },
+  { id: 'SUPPLIES', label: '📚 Supplies' },
+  { id: 'OTHER', label: '🎁 Other' },
 ];
 
 const DURATIONS = [
@@ -30,6 +30,7 @@ export default function PostScreen() {
   const colors = useColors();
   const insets = useSafeAreaInsets();
   const qc = useQueryClient();
+  const { user } = useAuth();
   const topPad = insets.top + (Platform.OS === 'web' ? 67 : 0);
   const botPad = insets.bottom + (Platform.OS === 'web' ? 34 : 0);
 
@@ -40,6 +41,31 @@ export default function PostScreen() {
   const [description, setDescription] = useState('');
   const [duration, setDuration] = useState(2);
   const [isLoading, setIsLoading] = useState(false);
+
+  const isVerified = user?.isVerified;
+
+  if (!isVerified) {
+    return (
+      <View style={[styles.root, { backgroundColor: colors.background }]}>
+        <View style={[styles.header, { paddingTop: topPad + 12 }]}>
+          <Text style={[styles.headerTitle, { color: colors.foreground }]}>Post a Listing</Text>
+        </View>
+        <View style={styles.gateContainer}>
+          <View style={[styles.gateBox, { backgroundColor: colors.muted }]}>
+            <Ionicons name="shield-checkmark-outline" size={48} color={colors.mutedForeground} />
+            <Text style={[styles.gateTitle, { color: colors.foreground }]}>Verification Required</Text>
+            <Text style={[styles.gateSub, { color: colors.mutedForeground }]}>
+              Your organization must be verified by an admin before you can post listings.
+            </Text>
+            <View style={[styles.gateStatus, { backgroundColor: '#fef9c3', borderColor: '#fef08a', borderWidth: 1 }]}>
+              <Ionicons name="time-outline" size={16} color="#854d0e" />
+              <Text style={[styles.gateStatusTxt, { color: '#854d0e' }]}>Pending verification</Text>
+            </View>
+          </View>
+        </View>
+      </View>
+    );
+  }
 
   const handlePost = async () => {
     if (!title.trim()) { Alert.alert('Required', 'Please enter a title.'); return; }
@@ -55,19 +81,15 @@ export default function PostScreen() {
         description: description.trim() || undefined,
         endTime,
       });
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
       qc.invalidateQueries({ queryKey: ['/api/listings/mine'] });
       setTitle(''); setBuilding(''); setRoom(''); setDescription(''); setDuration(2);
-      Alert.alert('Submitted!', 'Your listing is pending admin approval.');
+      Alert.alert('Submitted!', 'Your listing is pending admin approval and will be live once approved.');
     } catch (err: any) {
-      await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
       Alert.alert('Error', err?.response?.data?.message ?? 'Could not post listing. Try again.');
     } finally {
       setIsLoading(false);
     }
   };
-
-  const label = (id: string) => CATS.find(c => c.id === id)?.label ?? id;
 
   return (
     <View style={[styles.root, { backgroundColor: colors.background }]}>
@@ -89,6 +111,7 @@ export default function PostScreen() {
           returnKeyType="next"
           maxLength={80}
         />
+        <Text style={[styles.charCount, { color: colors.mutedForeground }]}>{title.length}/80</Text>
 
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>CATEGORY</Text>
         <View style={styles.catGrid}>
@@ -102,7 +125,6 @@ export default function PostScreen() {
               ]}
               onPress={() => setCategory(c.id)}
             >
-              <Ionicons name={c.icon} size={18} color={category === c.id ? colors.background : colors.mutedForeground} />
               <Text style={[styles.catTxt, { color: category === c.id ? colors.background : colors.foreground }]}>
                 {c.label}
               </Text>
@@ -150,14 +172,22 @@ export default function PostScreen() {
         <Text style={[styles.sectionLabel, { color: colors.mutedForeground }]}>DESCRIPTION (optional)</Text>
         <TextInput
           style={[styles.input, styles.textarea, { backgroundColor: colors.muted, color: colors.foreground }]}
-          placeholder="Any extra details..."
+          placeholder="Any extra details about this giveaway..."
           placeholderTextColor={colors.mutedForeground}
           value={description}
           onChangeText={setDescription}
           multiline
           numberOfLines={4}
           textAlignVertical="top"
+          maxLength={500}
         />
+
+        <View style={[styles.infoBox, { backgroundColor: colors.muted }]}>
+          <Ionicons name="information-circle-outline" size={18} color={colors.mutedForeground} />
+          <Text style={[styles.infoTxt, { color: colors.mutedForeground }]}>
+            Your listing will be reviewed by an admin before going live. This usually takes a few minutes.
+          </Text>
+        </View>
 
         <TouchableOpacity
           style={[styles.submitBtn, { backgroundColor: colors.primary }, isLoading && { opacity: 0.6 }]}
@@ -183,29 +213,37 @@ export default function PostScreen() {
 const styles = StyleSheet.create({
   root: { flex: 1 },
   header: { paddingHorizontal: 16, paddingBottom: 8 },
-  headerTitle: { fontSize: 26, fontWeight: '700', fontFamily: 'DM_Sans_700Bold' },
+  headerTitle: { fontSize: 26, fontWeight: '700' },
+  gateContainer: { flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 },
+  gateBox: { borderRadius: 20, padding: 28, alignItems: 'center', gap: 12, maxWidth: 340 },
+  gateTitle: { fontSize: 20, fontWeight: '700' },
+  gateSub: { fontSize: 14, textAlign: 'center', lineHeight: 20 },
+  gateStatus: {
+    flexDirection: 'row', alignItems: 'center', gap: 6,
+    paddingHorizontal: 14, paddingVertical: 8, borderRadius: 20, marginTop: 4,
+  },
+  gateStatusTxt: { fontSize: 13, fontWeight: '600' },
   content: { paddingHorizontal: 16, gap: 10 },
-  sectionLabel: {
-    fontSize: 11, fontWeight: '600', fontFamily: 'DM_Sans_600SemiBold',
-    letterSpacing: 0.8, marginTop: 6,
-  },
-  input: {
-    borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14,
-    fontSize: 15, fontFamily: 'DM_Sans_400Regular',
-  },
+  sectionLabel: { fontSize: 11, fontWeight: '600', letterSpacing: 0.8, marginTop: 6 },
+  input: { borderRadius: 12, paddingHorizontal: 16, paddingVertical: 14, fontSize: 15 },
   textarea: { height: 100, paddingTop: 14 },
+  charCount: { fontSize: 11, textAlign: 'right', marginTop: -4 },
   catGrid: { flexDirection: 'row', flexWrap: 'wrap', gap: 8 },
   catBtn: {
-    flexDirection: 'row', alignItems: 'center', gap: 6,
-    paddingHorizontal: 14, paddingVertical: 10, borderRadius: 20,
+    paddingHorizontal: 16, paddingVertical: 10, borderRadius: 20,
   },
-  catTxt: { fontSize: 14, fontWeight: '600', fontFamily: 'DM_Sans_600SemiBold' },
+  catTxt: { fontSize: 14, fontWeight: '600' },
   durationRow: { flexDirection: 'row', gap: 8 },
   durBtn: { flex: 1, alignItems: 'center', paddingVertical: 10, borderRadius: 10 },
-  durTxt: { fontSize: 14, fontWeight: '600', fontFamily: 'DM_Sans_600SemiBold' },
+  durTxt: { fontSize: 14, fontWeight: '600' },
+  infoBox: {
+    flexDirection: 'row', alignItems: 'flex-start', gap: 8,
+    padding: 14, borderRadius: 12, marginTop: 4,
+  },
+  infoTxt: { fontSize: 13, flex: 1, lineHeight: 18 },
   submitBtn: {
     flexDirection: 'row', alignItems: 'center', justifyContent: 'center',
     gap: 8, borderRadius: 12, paddingVertical: 14, marginTop: 8,
   },
-  submitTxt: { color: '#fff', fontSize: 15, fontWeight: '600', fontFamily: 'DM_Sans_600SemiBold' },
+  submitTxt: { color: '#fff', fontSize: 15, fontWeight: '600' },
 });

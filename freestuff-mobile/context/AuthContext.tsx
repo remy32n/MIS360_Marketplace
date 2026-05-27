@@ -7,15 +7,23 @@ export interface User {
   id: string;
   email: string;
   role: 'STUDENT' | 'ORG' | 'ADMIN';
+  firstName?: string;
+  lastName?: string;
   orgId?: string;
   orgName?: string;
+  orgType?: string;
+  isVerified?: boolean;
+  verificationStatus?: string;
 }
 
 interface SignupData {
   email: string;
   password: string;
+  firstName?: string;
+  lastName?: string;
   accountType: 'STUDENT' | 'ORG';
   orgName?: string;
+  orgType?: string;
   contactEmail?: string;
 }
 
@@ -26,7 +34,7 @@ interface AuthContextValue {
   isStudent: boolean;
   isOrg: boolean;
   isAdmin: boolean;
-  login: (email: string, password: string) => Promise<void>;
+  login: (email: string, password: string) => Promise<{ user: User }>;
   signup: (data: SignupData) => Promise<void>;
   logout: () => Promise<void>;
 }
@@ -37,7 +45,7 @@ async function getToken(): Promise<string | null> {
   if (Platform.OS === 'web') {
     return typeof localStorage !== 'undefined' ? localStorage.getItem(TOKEN_KEY) : null;
   }
-  return SecureStore.getItemAsync(TOKEN_KEY);
+  try { return await SecureStore.getItemAsync(TOKEN_KEY); } catch { return null; }
 }
 
 async function setToken(value: string): Promise<void> {
@@ -53,8 +61,25 @@ async function removeToken(): Promise<void> {
     if (typeof localStorage !== 'undefined') localStorage.removeItem(TOKEN_KEY);
     return;
   }
-  return SecureStore.deleteItemAsync(TOKEN_KEY);
+  try { await SecureStore.deleteItemAsync(TOKEN_KEY); } catch {}
 }
+
+function mergeUserOrg(rawUser: any, org: any): User {
+  return {
+    id: rawUser.id,
+    email: rawUser.email,
+    role: rawUser.role,
+    firstName: rawUser.firstName,
+    lastName: rawUser.lastName,
+    orgId: org?.id,
+    orgName: org?.orgName,
+    orgType: org?.orgType,
+    verificationStatus: org?.verificationStatus,
+    isVerified: org?.verificationStatus === 'VERIFIED',
+  };
+}
+
+export { getToken };
 
 export const AuthContext = createContext<AuthContextValue | null>(null);
 
@@ -68,7 +93,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const token = await getToken();
         if (!token) return;
         const data = await apiRequest<any>('GET', '/api/auth/me');
-        setUser(data.user ?? data);
+        setUser(mergeUserOrg(data.user ?? data, data.org ?? null));
       } catch {
         await removeToken();
       } finally {
@@ -77,16 +102,16 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     })();
   }, []);
 
-  const login = async (email: string, password: string) => {
-    const data = await apiRequest<{ token: string; user: User }>('POST', '/api/auth/login', { email, password });
+  const login = async (email: string, password: string): Promise<{ user: User }> => {
+    const data = await apiRequest<any>('POST', '/api/auth/login', { email, password });
     await setToken(data.token);
-    setUser(data.user);
+    const merged = mergeUserOrg(data.user, data.org ?? null);
+    setUser(merged);
+    return { user: merged };
   };
 
   const signup = async (payload: SignupData) => {
-    const data = await apiRequest<{ token: string; user: User }>('POST', '/api/auth/signup', payload);
-    await setToken(data.token);
-    setUser(data.user);
+    await apiRequest('POST', '/api/auth/signup', payload);
   };
 
   const logout = async () => {

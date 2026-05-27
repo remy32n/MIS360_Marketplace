@@ -9,7 +9,7 @@ export function getApiUrl(): string {
   return BASE_URL;
 }
 
-async function getToken(): Promise<string | null> {
+export async function getToken(): Promise<string | null> {
   try {
     if (Platform.OS === 'web') {
       return typeof localStorage !== 'undefined' ? localStorage.getItem('auth_token') : null;
@@ -20,13 +20,19 @@ async function getToken(): Promise<string | null> {
   }
 }
 
-export async function apiRequest<T = any>(method: string, path: string, data?: any): Promise<T> {
+export async function apiRequest<T = any>(
+  method: string,
+  path: string,
+  data?: any,
+  params?: Record<string, any>
+): Promise<T> {
   const token = await getToken();
   const url = path.startsWith('http') ? path : `${BASE_URL}${path}`;
   const response = await axios({
     method: method as any,
     url,
-    data,
+    data: method.toUpperCase() !== 'GET' ? data : undefined,
+    params: method.toUpperCase() === 'GET' ? (data || params) : params,
     headers: {
       'Content-Type': 'application/json',
       ...(token ? { Authorization: `Bearer ${token}` } : {}),
