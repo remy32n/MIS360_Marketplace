@@ -35,6 +35,8 @@ minimumReleaseAgeExclude:
   - stripe-replit-sync
 
 packages:
+  - api-server
+  - freestuff
   - artifacts/*
   - lib/*
   - lib/integrations/*
@@ -70,8 +72,10 @@ autoInstallPeers: false
 
 onlyBuiltDependencies:
   - '@swc/core'
+  - '@prisma/engines'
   - esbuild
   - msw
+  - prisma
   - unrs-resolver
 
 overrides:
