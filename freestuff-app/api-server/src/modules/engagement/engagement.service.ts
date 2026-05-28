@@ -79,14 +79,18 @@ export const engagementService = {
   async getStats() {
     const [
       totalActiveListings,
+      totalPendingListings,
+      pendingOrgs,
       usersByRole,
       totalSaves,
       topByViews,
       topBySaves,
       byCategory,
-      recentActivity,
+      recentListings,
     ] = await Promise.all([
       prisma.listing.count({ where: { status: "ACTIVE" } }),
+      prisma.listing.count({ where: { status: "PENDING" } }),
+      prisma.studentOrg.count({ where: { verificationStatus: "PENDING" } }),
       prisma.user.groupBy({ by: ["role"], _count: { role: true } }),
       prisma.savedListing.count(),
       prisma.listing.findMany({ orderBy: { viewCount: "desc" }, take: 5, select: { id: true, title: true, viewCount: true } }),
@@ -101,10 +105,17 @@ export const engagementService = {
       }),
     ]);
 
-    const totalUsers = usersByRole.reduce((acc, r) => {
+    const roleMap = usersByRole.reduce((acc, r) => {
       acc[r.role] = r._count.role;
       return acc;
     }, {} as Record<string, number>);
+
+    const totalUsers = {
+      total: (roleMap["STUDENT"] ?? 0) + (roleMap["ORG"] ?? 0) + (roleMap["ADMIN"] ?? 0),
+      students: roleMap["STUDENT"] ?? 0,
+      orgs: roleMap["ORG"] ?? 0,
+      admins: roleMap["ADMIN"] ?? 0,
+    };
 
     const listingsByCategory = byCategory.reduce((acc, r) => {
       acc[r.category] = r._count.category;
@@ -112,9 +123,15 @@ export const engagementService = {
     }, {} as Record<string, number>);
 
     return {
-      totalActiveListings, totalUsers, totalSaves,
-      topListingsByViews: topByViews, topListingsBySaves: topBySaves,
-      listingsByCategory, recentActivity,
+      totalActiveListings,
+      totalPendingListings,
+      pendingOrgs,
+      totalUsers,
+      totalSaves,
+      topListingsByViews: topByViews,
+      topListingsBySaves: topBySaves,
+      listingsByCategory,
+      recentListings,
     };
   },
 };

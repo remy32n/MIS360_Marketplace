@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  SafeAreaView, RefreshControl, Alert,
+  SafeAreaView, RefreshControl, Modal, ActivityIndicator,
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
@@ -19,6 +19,10 @@ export default function OrgVerificationScreen() {
   const [filter, setFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [confirmModal, setConfirmModal] = useState(false);
+  const [confirmAction, setConfirmAction] = useState(null); // { org, type: 'verify'|'reject'|'revoke' }
+  const [actionLoading, setActionLoading] = useState(false);
 
   const fetchOrgs = useCallback(async () => {
     try {
@@ -43,68 +47,33 @@ export default function OrgVerificationScreen() {
     fetchOrgs();
   };
 
-  const handleVerify = (org) => {
-    Alert.alert(
-      `Verify "${org.orgName}"?`,
-      'They will be able to post listings immediately.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Yes, Verify',
-          onPress: async () => {
-            try {
-              await usersAPI.updateOrgStatus(org.id, 'VERIFIED');
-              setOrgs(os => os.map(o => o.id === org.id ? { ...o, verificationStatus: 'VERIFIED' } : o));
-              Toast.show({ type: 'success', text1: 'Organization verified.' });
-            } catch (e) {
-              Toast.show({ type: 'error', text1: 'Failed to verify organization.' });
-            }
-          },
-        },
-      ]
-    );
+  const openConfirm = (org, type) => {
+    setConfirmAction({ org, type });
+    setConfirmModal(true);
   };
 
-  const handleReject = (org) => {
-    Alert.alert(
-      `Reject "${org.orgName}"?`,
-      'They will be notified and cannot post listings.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Reject',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await usersAPI.updateOrgStatus(org.id, 'REJECTED');
-              setOrgs(os => os.map(o => o.id === org.id ? { ...o, verificationStatus: 'REJECTED' } : o));
-              Toast.show({ type: 'success', text1: 'Organization rejected.' });
-            } catch (e) {
-              Toast.show({ type: 'error', text1: 'Failed to reject organization.' });
-            }
-          },
-        },
-      ]
-    );
+  const confirmMessages = {
+    verify:  { title: 'Verify organization?', body: 'They will be able to post listings immediately.', btn: 'Yes, Verify', btnColor: COLORS.brand[600] },
+    reject:  { title: 'Reject organization?', body: 'They will be notified and cannot post listings.', btn: 'Reject', btnColor: COLORS.error },
+    revoke:  { title: 'Revoke verification?', body: 'Their verified status will be removed.', btn: 'Revoke', btnColor: COLORS.error },
   };
 
-  const handleRevoke = (org) => {
-    Alert.alert('Revoke verification?', `Remove verified status from "${org.orgName}"?`, [
-      { text: 'Cancel', style: 'cancel' },
-      {
-        text: 'Revoke',
-        style: 'destructive',
-        onPress: async () => {
-          try {
-            await usersAPI.updateOrgStatus(org.id, 'REJECTED');
-            setOrgs(os => os.map(o => o.id === org.id ? { ...o, verificationStatus: 'REJECTED' } : o));
-            Toast.show({ type: 'success', text1: 'Verification revoked.' });
-          } catch (e) {
-            Toast.show({ type: 'error', text1: 'Failed to revoke.' });
-          }
-        },
-      },
-    ]);
+  const handleConfirm = async () => {
+    if (!confirmAction) return;
+    const { org, type } = confirmAction;
+    const newStatus = type === 'verify' ? 'VERIFIED' : 'REJECTED';
+    setActionLoading(true);
+    try {
+      await usersAPI.updateOrgStatus(org.id, newStatus);
+      setOrgs(os => os.map(o => o.id === org.id ? { ...o, verificationStatus: newStatus } : o));
+      setConfirmModal(false);
+      const labels = { verify: 'verified', reject: 'rejected', revoke: 'revoked' };
+      Toast.show({ type: 'success', text1: `Organization ${labels[type]}.` });
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Action failed. Please try again.' });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const pendingCount = orgs.filter(o => o.verificationStatus === 'PENDING').length;
@@ -120,6 +89,8 @@ export default function OrgVerificationScreen() {
     Verified: 'No verified organizations.',
     Rejected: 'No rejected organizations.',
   };
+
+  const msg = confirmAction ? confirmMessages[confirmAction.type] : null;
 
   return (
     <SafeAreaView style={styles.safe}>
@@ -153,9 +124,9 @@ export default function OrgVerificationScreen() {
           renderItem={({ item }) => (
             <OrgCard
               org={item}
-              onVerify={() => handleVerify(item)}
-              onReject={() => handleReject(item)}
-              onRevoke={item.verificationStatus === 'VERIFIED' ? () => handleRevoke(item) : undefined}
+              onVerify={() => openConfirm(item, 'verify')}
+              onReject={() => openConfirm(item, 'reject')}
+              onRevoke={item.verificationStatus === 'VERIFIED' ? () => openConfirm(item, 'revoke') : undefined}
             />
           )}
           contentContainerStyle={styles.list}
@@ -168,6 +139,30 @@ export default function OrgVerificationScreen() {
           }
         />
       )}
+
+      <Modal visible={confirmModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>{msg?.title}</Text>
+            <Text style={styles.modalOrgName} numberOfLines={1}>{confirmAction?.org?.orgName}</Text>
+            <Text style={styles.modalBody}>{msg?.body}</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setConfirmModal(false)} disabled={actionLoading}>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                style={[styles.actionBtn, { backgroundColor: msg?.btnColor }]}
+                onPress={handleConfirm}
+                disabled={actionLoading}
+              >
+                {actionLoading
+                  ? <ActivityIndicator color={COLORS.white} />
+                  : <Text style={styles.actionBtnText}>{msg?.btn}</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -214,4 +209,38 @@ const styles = StyleSheet.create({
   filterText: { fontSize: FONTS.sizes.sm, color: COLORS.gray[600], fontWeight: '500' },
   filterTextActive: { color: COLORS.white, fontWeight: '700' },
   list: { padding: SPACING.base },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.xl,
+  },
+  modalBox: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: { fontSize: FONTS.sizes.lg, fontWeight: '800', color: COLORS.gray[900], marginBottom: 4 },
+  modalOrgName: { fontSize: FONTS.sizes.base, fontWeight: '600', color: COLORS.depaul.blue, marginBottom: SPACING.sm },
+  modalBody: { fontSize: FONTS.sizes.sm, color: COLORS.gray[600], lineHeight: 20, marginBottom: SPACING.base },
+  modalActions: { flexDirection: 'row', gap: SPACING.md },
+  cancelBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: COLORS.gray[300],
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  cancelBtnText: { color: COLORS.gray[700], fontWeight: '600', fontSize: FONTS.sizes.base },
+  actionBtn: {
+    flex: 1,
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  actionBtnText: { color: COLORS.white, fontWeight: '700', fontSize: FONTS.sizes.base },
 });

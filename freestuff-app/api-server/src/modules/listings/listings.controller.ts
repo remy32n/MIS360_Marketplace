@@ -161,7 +161,7 @@ export const listingsController = {
       const listing = await listingsService.getListingByIdAdmin(id);
       if (!listing) { sendError(res, 404, "Listing not found."); return; }
 
-      const finalStatus = status === "APPROVED" ? "ACTIVE" : "REJECTED";
+      const finalStatus = status === "APPROVED" ? "ACTIVE" : "REMOVED";
       const updated = await listingsService.updateListingStatus(id, finalStatus);
 
       if (status === "APPROVED") {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, StyleSheet, SafeAreaView,
-  RefreshControl, Modal, TextInput, TouchableOpacity, Alert, ActivityIndicator,
+  RefreshControl, Modal, TextInput, TouchableOpacity, ActivityIndicator,
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import Toast from 'react-native-toast-message';
@@ -16,9 +16,14 @@ export default function ApprovalQueueScreen() {
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
   const [rejectModal, setRejectModal] = useState(false);
   const [rejectTarget, setRejectTarget] = useState(null);
   const [rejectReason, setRejectReason] = useState('');
+
+  const [approveModal, setApproveModal] = useState(false);
+  const [approveTarget, setApproveTarget] = useState(null);
+
   const [actionLoading, setActionLoading] = useState(false);
 
   const fetchPending = useCallback(async () => {
@@ -44,29 +49,24 @@ export default function ApprovalQueueScreen() {
     fetchPending();
   };
 
-  const handleApprove = (listing) => {
-    Alert.alert(
-      `Approve "${listing.title}"?`,
-      'It will go live immediately and students will be notified.',
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Yes, Approve',
-          onPress: async () => {
-            setActionLoading(true);
-            try {
-              await listingsAPI.updateStatus(listing.id, 'APPROVED');
-              setListings(ls => ls.filter(l => l.id !== listing.id));
-              Toast.show({ type: 'success', text1: 'Listing approved! Students notified.' });
-            } catch (e) {
-              Toast.show({ type: 'error', text1: 'Failed to approve. Please try again.' });
-            } finally {
-              setActionLoading(false);
-            }
-          },
-        },
-      ]
-    );
+  const handleApprovePress = (listing) => {
+    setApproveTarget(listing);
+    setApproveModal(true);
+  };
+
+  const handleApproveConfirm = async () => {
+    if (!approveTarget) return;
+    setActionLoading(true);
+    try {
+      await listingsAPI.updateStatus(approveTarget.id, 'APPROVED');
+      setListings(ls => ls.filter(l => l.id !== approveTarget.id));
+      setApproveModal(false);
+      Toast.show({ type: 'success', text1: 'Listing approved! Students notified.' });
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Failed to approve. Please try again.' });
+    } finally {
+      setActionLoading(false);
+    }
   };
 
   const handleRejectPress = (listing) => {
@@ -111,7 +111,7 @@ export default function ApprovalQueueScreen() {
           renderItem={({ item }) => (
             <ApprovalCard
               listing={item}
-              onApprove={handleApprove}
+              onApprove={handleApprovePress}
               onReject={handleRejectPress}
             />
           )}
@@ -127,8 +127,30 @@ export default function ApprovalQueueScreen() {
         />
       )}
 
-      <Modal visible={rejectModal} transparent animationType="slide">
+      {/* Approve confirmation modal */}
+      <Modal visible={approveModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Approve this listing?</Text>
+            <Text style={styles.modalSubtitle} numberOfLines={2}>{approveTarget?.title}</Text>
+            <Text style={styles.modalBody}>It will go live immediately and all students will be notified.</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setApproveModal(false)} disabled={actionLoading}>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.approveBtn} onPress={handleApproveConfirm} disabled={actionLoading}>
+                {actionLoading
+                  ? <ActivityIndicator color={COLORS.white} />
+                  : <Text style={styles.approveBtnText}>Yes, Approve</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Reject modal */}
+      <Modal visible={rejectModal} transparent animationType="slide">
+        <View style={styles.sheetOverlay}>
           <View style={styles.modalSheet}>
             <Text style={styles.modalTitle}>Reject this listing?</Text>
             <Text style={styles.modalSubtitle} numberOfLines={1}>{rejectTarget?.title}</Text>
@@ -191,7 +213,21 @@ const styles = StyleSheet.create({
     backgroundColor: COLORS.white,
   },
   list: { padding: SPACING.base },
-  modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.xl,
+  },
+  modalBox: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    width: '100%',
+    maxWidth: 400,
+  },
+  sheetOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.4)', justifyContent: 'flex-end' },
   modalSheet: {
     backgroundColor: COLORS.white,
     borderTopLeftRadius: RADIUS.xl,
@@ -200,7 +236,26 @@ const styles = StyleSheet.create({
     paddingBottom: SPACING['3xl'],
   },
   modalTitle: { fontSize: FONTS.sizes.xl, fontWeight: '800', color: COLORS.gray[900], marginBottom: SPACING.xs },
-  modalSubtitle: { fontSize: FONTS.sizes.sm, color: COLORS.gray[500], marginBottom: SPACING.base },
+  modalSubtitle: { fontSize: FONTS.sizes.sm, color: COLORS.gray[500], marginBottom: SPACING.sm },
+  modalBody: { fontSize: FONTS.sizes.sm, color: COLORS.gray[600], marginBottom: SPACING.base, lineHeight: 20 },
+  modalActions: { flexDirection: 'row', gap: SPACING.md, marginTop: SPACING.sm },
+  cancelBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: COLORS.gray[300],
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  cancelBtnText: { color: COLORS.gray[700], fontWeight: '600', fontSize: FONTS.sizes.base },
+  approveBtn: {
+    flex: 1,
+    backgroundColor: COLORS.brand[600],
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  approveBtnText: { color: COLORS.white, fontWeight: '700', fontSize: FONTS.sizes.base },
   reasonInput: {
     borderWidth: 1.5,
     borderColor: COLORS.gray[200],

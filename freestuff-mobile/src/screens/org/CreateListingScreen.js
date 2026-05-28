@@ -19,18 +19,42 @@ const CATEGORIES = [
   { key: 'OTHER',   emoji: '🎁', label: 'Other' },
 ];
 
-function DateTimeField({ label, value, onChangeText, placeholder }) {
+function DateTimeField({ label, value, onChangeText }) {
+  if (Platform.OS === 'web') {
+    return (
+      <View style={{ marginBottom: SPACING.xs }}>
+        <Text style={styles.label}>{label}</Text>
+        <input
+          type="datetime-local"
+          value={value || ''}
+          onChange={e => onChangeText(e.target.value)}
+          style={{
+            width: '100%',
+            padding: '10px 12px',
+            fontSize: '16px',
+            borderRadius: '8px',
+            border: '1.5px solid #e2e8f0',
+            backgroundColor: '#f8fafc',
+            color: '#0f172a',
+            outline: 'none',
+            boxSizing: 'border-box',
+            fontFamily: 'inherit',
+            cursor: 'pointer',
+          }}
+        />
+      </View>
+    );
+  }
   return (
     <View style={{ marginBottom: SPACING.xs }}>
       <Text style={styles.label}>{label}</Text>
       <TextInput
         style={styles.input}
-        placeholder={placeholder || 'YYYY-MM-DDTHH:MM (e.g. 2025-12-01T14:00)'}
+        placeholder="YYYY-MM-DDTHH:MM (e.g. 2026-12-01T14:00)"
         placeholderTextColor={COLORS.gray[400]}
         value={value}
         onChangeText={onChangeText}
         autoCapitalize="none"
-        keyboardType={Platform.OS === 'web' ? 'default' : 'default'}
       />
       <Text style={styles.helper}>Format: YYYY-MM-DDTHH:MM (24hr)</Text>
     </View>

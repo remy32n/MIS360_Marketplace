@@ -77,7 +77,7 @@ export const engagementAPI = {
 
 export const usersAPI = {
   verifyOrgStatus: (orgId) => api.get(`/users/verifyOrgStatus/${orgId}`).then(r => r.data),
-  getAllOrgs:       () => api.get('/users/orgs').then(r => r.data),
+  getAllOrgs:       () => api.get('/orgs').then(r => r.data),
   updateOrgStatus: (orgId, status) =>
-    api.patch(`/users/orgs/${orgId}/verify`, { status }).then(r => r.data),
+    api.patch(`/orgs/${orgId}/verify`, { status }).then(r => r.data),
 };

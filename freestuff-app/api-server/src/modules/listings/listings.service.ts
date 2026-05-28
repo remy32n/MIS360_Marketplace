@@ -22,7 +22,7 @@ export const listingsService = {
     const skip = (page - 1) * take;
     const now = new Date();
 
-    const where: any = { status: "ACTIVE", endTime: { gt: now } };
+    const where: any = { status: "ACTIVE" };
     if (category) where.category = category;
     if (building) where.buildingName = { contains: building, mode: "insensitive" };
     if (search) {

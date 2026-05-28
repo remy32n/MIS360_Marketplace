@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import {
   View, Text, FlatList, TouchableOpacity, StyleSheet,
-  SafeAreaView, RefreshControl, Alert,
+  SafeAreaView, RefreshControl, Modal, ActivityIndicator,
 } from 'react-native';
 import { useIsFocused } from '@react-navigation/native';
 import { Ionicons } from '@expo/vector-icons';
@@ -21,6 +21,10 @@ export default function MyListingsScreen({ navigation }) {
   const [filter, setFilter] = useState('All');
   const [loading, setLoading] = useState(true);
   const [refreshing, setRefreshing] = useState(false);
+
+  const [removeModal, setRemoveModal] = useState(false);
+  const [removeTarget, setRemoveTarget] = useState(null);
+  const [removeLoading, setRemoveLoading] = useState(false);
 
   const fetchListings = useCallback(async () => {
     try {
@@ -46,27 +50,24 @@ export default function MyListingsScreen({ navigation }) {
     fetchListings();
   };
 
-  const handleRemove = (listing) => {
-    Alert.alert(
-      'Remove listing?',
-      `Remove "${listing.title}"? This cannot be undone.`,
-      [
-        { text: 'Cancel', style: 'cancel' },
-        {
-          text: 'Remove',
-          style: 'destructive',
-          onPress: async () => {
-            try {
-              await listingsAPI.remove(listing.id);
-              setListings(ls => ls.map(l => l.id === listing.id ? { ...l, status: 'REMOVED' } : l));
-              Toast.show({ type: 'success', text1: 'Listing removed.' });
-            } catch (e) {
-              Toast.show({ type: 'error', text1: 'Failed to remove listing.' });
-            }
-          },
-        },
-      ]
-    );
+  const handleRemovePress = (listing) => {
+    setRemoveTarget(listing);
+    setRemoveModal(true);
+  };
+
+  const handleRemoveConfirm = async () => {
+    if (!removeTarget) return;
+    setRemoveLoading(true);
+    try {
+      await listingsAPI.remove(removeTarget.id);
+      setListings(ls => ls.map(l => l.id === removeTarget.id ? { ...l, status: 'REMOVED' } : l));
+      setRemoveModal(false);
+      Toast.show({ type: 'success', text1: 'Listing removed.' });
+    } catch (e) {
+      Toast.show({ type: 'error', text1: 'Failed to remove listing.' });
+    } finally {
+      setRemoveLoading(false);
+    }
   };
 
   const filtered = listings.filter(l => {
@@ -103,7 +104,7 @@ export default function MyListingsScreen({ navigation }) {
             <Ionicons name="pencil-outline" size={16} color={COLORS.depaul.blue} />
             <Text style={styles.editBtnText}>Edit</Text>
           </TouchableOpacity>
-          <TouchableOpacity style={styles.removeBtn} onPress={() => handleRemove(item)}>
+          <TouchableOpacity style={styles.removeBtn} onPress={() => handleRemovePress(item)}>
             <Ionicons name="trash-outline" size={16} color={COLORS.error} />
             <Text style={styles.removeBtnText}>Remove</Text>
           </TouchableOpacity>
@@ -164,6 +165,27 @@ export default function MyListingsScreen({ navigation }) {
           }
         />
       )}
+
+      <Modal visible={removeModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Ionicons name="trash-outline" size={32} color={COLORS.error} style={{ alignSelf: 'center', marginBottom: SPACING.md }} />
+            <Text style={styles.modalTitle}>Remove this listing?</Text>
+            <Text style={styles.modalName} numberOfLines={2}>{removeTarget?.title}</Text>
+            <Text style={styles.modalBody}>This cannot be undone. The listing will no longer be visible to students.</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setRemoveModal(false)} disabled={removeLoading}>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.removeConfirmBtn} onPress={handleRemoveConfirm} disabled={removeLoading}>
+                {removeLoading
+                  ? <ActivityIndicator color={COLORS.white} />
+                  : <Text style={styles.removeConfirmBtnText}>Remove</Text>}
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </SafeAreaView>
   );
 }
@@ -256,4 +278,39 @@ const styles = StyleSheet.create({
     borderColor: COLORS.error,
   },
   removeBtnText: { color: COLORS.error, fontWeight: '600', fontSize: FONTS.sizes.sm },
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.45)',
+    justifyContent: 'center',
+    alignItems: 'center',
+    padding: SPACING.xl,
+  },
+  modalBox: {
+    backgroundColor: COLORS.white,
+    borderRadius: RADIUS.xl,
+    padding: SPACING.xl,
+    width: '100%',
+    maxWidth: 400,
+  },
+  modalTitle: { fontSize: FONTS.sizes.lg, fontWeight: '800', color: COLORS.gray[900], marginBottom: 4, textAlign: 'center' },
+  modalName: { fontSize: FONTS.sizes.sm, fontWeight: '600', color: COLORS.gray[700], marginBottom: SPACING.sm, textAlign: 'center' },
+  modalBody: { fontSize: FONTS.sizes.sm, color: COLORS.gray[500], textAlign: 'center', lineHeight: 20, marginBottom: SPACING.base },
+  modalActions: { flexDirection: 'row', gap: SPACING.md },
+  cancelBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: COLORS.gray[300],
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  cancelBtnText: { color: COLORS.gray[700], fontWeight: '600', fontSize: FONTS.sizes.base },
+  removeConfirmBtn: {
+    flex: 1,
+    backgroundColor: COLORS.error,
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  removeConfirmBtnText: { color: COLORS.white, fontWeight: '700', fontSize: FONTS.sizes.base },
 });
