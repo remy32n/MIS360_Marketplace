@@ -1,37 +1,37 @@
 {
   "name": "freestuff-mobile",
   "version": "1.0.0",
-  "main": "expo-router/entry",
+  "main": "App.js",
   "scripts": {
     "start": "expo start --port 5000",
     "ios": "expo start --ios",
-    "android": "expo start --android"
+    "android": "expo start --android",
+    "web": "expo start --web --port 5000"
   },
   "dependencies": {
-    "@expo-google-fonts/dm-sans": "~0.4.2",
     "@expo/vector-icons": "^14.0.4",
     "@react-native-async-storage/async-storage": "^3.1.0",
-    "@tanstack/react-query": "^5.64.1",
+    "@react-navigation/bottom-tabs": "^6.6.1",
+    "@react-navigation/native": "^6.1.18",
+    "@react-navigation/stack": "^6.4.1",
     "axios": "^1.8.4",
+    "dayjs": "^1.11.13",
     "expo": "~56.0.5",
     "expo-constants": "~56.0.16",
     "expo-font": "~56.0.5",
-    "expo-haptics": "~56.0.3",
     "expo-linking": "~56.0.12",
-    "expo-router": "~56.2.7",
-    "expo-secure-store": "~56.0.4",
     "expo-splash-screen": "~56.0.10",
     "expo-status-bar": "~56.0.4",
     "react": "19.0.0",
     "react-dom": "19.0.0",
     "react-native": "0.79.5",
     "react-native-gesture-handler": "~2.31.2",
-    "react-native-keyboard-controller": "~1.21.8",
     "react-native-reanimated": "~4.4.0",
     "react-native-safe-area-context": "~5.8.0",
     "react-native-screens": "~4.25.2",
+    "react-native-toast-message": "^2.2.1",
     "react-native-web": "~0.21.2",
-    "react-native-worklets": "~0.9.1"
+    "react-native-worklets": "^0.9.1"
   },
   "devDependencies": {
     "@babel/core": "^7.25.2",

@@ -1,17 +1,19 @@
 {
   "expo": {
-    "name": "Free Stuff",
-    "slug": "freestuff-mobile",
+    "name": "Free Stuff on Campus",
+    "slug": "free-stuff-campus",
     "version": "1.0.0",
     "orientation": "portrait",
-    "scheme": "freestuff",
     "userInterfaceStyle": "light",
-    "newArchEnabled": true,
+    "newArchEnabled": false,
     "ios": {
       "supportsTablet": false,
       "bundleIdentifier": "edu.depaul.freestuff"
     },
     "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#16a34a"
+      },
       "package": "edu.depaul.freestuff"
     },
     "web": {
@@ -19,17 +21,12 @@
       "output": "single"
     },
     "plugins": [
-      "expo-router",
-      "expo-secure-store",
       [
         "expo-splash-screen",
         {
-          "backgroundColor": "#ffffff"
+          "backgroundColor": "#16a34a"
         }
       ]
-    ],
-    "experiments": {
-      "typedRoutes": true
-    }
+    ]
   }
 }
