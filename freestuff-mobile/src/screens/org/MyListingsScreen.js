@@ -27,6 +27,7 @@ export default function MyListingsScreen({ navigation }) {
       const data = await listingsAPI.getMyListings();
       setListings(data.listings || []);
     } catch (e) {
+      Toast.show({ type: 'error', text1: 'Could not load listings.', text2: e?.response?.data?.error || e?.message });
     } finally {
       setLoading(false);
       setRefreshing(false);

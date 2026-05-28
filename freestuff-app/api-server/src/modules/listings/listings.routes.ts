@@ -9,7 +9,7 @@ import { validateListingBody } from "../../middleware/validate.middleware.js";
 const router = Router();
 
 const listingsReadLimiter = rateLimit({ windowMs: 15 * 60 * 1000, max: 100 });
-const listingsCreateLimiter = rateLimit({ windowMs: 24 * 60 * 60 * 1000, max: 5 });
+const listingsCreateLimiter = rateLimit({ windowMs: 24 * 60 * 60 * 1000, max: 100 });
 
 router.get("/admin/pending", requireAuth, requireAdmin, listingsController.getPending);
 router.get("/admin/all", requireAuth, requireAdmin, listingsController.getAllAdmin);

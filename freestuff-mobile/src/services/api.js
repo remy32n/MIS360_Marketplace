@@ -62,7 +62,7 @@ export const listingsAPI = {
     api.patch(`/listings/${id}/status`, { status, reason }).then(r => r.data),
   getPending:   () => api.get('/listings/admin/pending').then(r => r.data),
   getAllAdmin:   (params) => api.get('/listings/admin/all', { params }).then(r => r.data),
-  getMyListings:() => api.get('/listings/org/mine').then(r => r.data),
+  getMyListings:() => api.get('/listings/mine').then(r => r.data),
 };
 
 export const engagementAPI = {
