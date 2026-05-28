@@ -1,7 +1,19 @@
 import axios from 'axios';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { Platform } from 'react-native';
 
-const BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:8080';
+// On web: use relative path so requests go through the port-5000 proxy → Express on 8080.
+// On native: fall back to the env var or localhost.
+function getBaseURL() {
+  const envUrl = process.env.EXPO_PUBLIC_API_URL;
+  if (Platform.OS === 'web') {
+    // Always use relative path on web — the proxy handles routing to port 8080
+    return '';
+  }
+  return envUrl || 'http://localhost:8080';
+}
+
+const BASE_URL = getBaseURL();
 
 const api = axios.create({
   baseURL: `${BASE_URL}/api`,
@@ -35,7 +47,7 @@ export const authAPI = {
   signup: (data) =>
     api.post('/auth/signup', data).then(r => r.data),
   getMe: (token) =>
-    axios.get(`${BASE_URL}/api/auth/me`, {
+    api.get('/auth/me', {
       headers: { Authorization: `Bearer ${token}` },
     }).then(r => r.data),
 };
