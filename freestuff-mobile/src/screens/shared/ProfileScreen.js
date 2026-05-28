@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  SafeAreaView, Alert, Modal,
+  SafeAreaView, Alert, Modal, Platform,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -22,10 +22,16 @@ export default function ProfileScreen() {
   const initials = `${user?.firstName?.[0] || ''}${user?.lastName?.[0] || ''}`.toUpperCase();
 
   const handleLogout = () => {
-    Alert.alert('Log out?', 'You will be returned to the login screen.', [
-      { text: 'Cancel', style: 'cancel' },
-      { text: 'Yes, Log Out', style: 'destructive', onPress: logout },
-    ]);
+    if (Platform.OS === 'web') {
+      if (window.confirm('Log out? You will be returned to the login screen.')) {
+        logout();
+      }
+    } else {
+      Alert.alert('Log out?', 'You will be returned to the login screen.', [
+        { text: 'Cancel', style: 'cancel' },
+        { text: 'Yes, Log Out', style: 'destructive', onPress: logout },
+      ]);
+    }
   };
 
   const orgStatus = org?.verificationStatus;
