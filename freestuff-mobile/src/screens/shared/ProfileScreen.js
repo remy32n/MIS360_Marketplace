@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import {
   View, Text, TouchableOpacity, StyleSheet, ScrollView,
-  SafeAreaView, Alert, Modal, Platform,
+  SafeAreaView, Modal,
 } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useAuth } from '../../contexts/AuthContext';
@@ -16,25 +16,13 @@ const ROLE_COLORS = {
 
 export default function ProfileScreen() {
   const { user, org, logout } = useAuth();
-  const [aboutModal, setAboutModal] = useState(false);
+  const [aboutModal, setAboutModal]   = useState(false);
+  const [logoutModal, setLogoutModal] = useState(false);
 
   const roleColor = ROLE_COLORS[user?.role] || ROLE_COLORS.STUDENT;
   const initials = `${user?.firstName?.[0] || ''}${user?.lastName?.[0] || ''}`.toUpperCase();
 
-  const handleLogout = () => {
-    if (Platform.OS === 'web') {
-      if (window.confirm('Log out? You will be returned to the login screen.')) {
-        logout();
-      }
-    } else {
-      Alert.alert('Log out?', 'You will be returned to the login screen.', [
-        { text: 'Cancel', style: 'cancel' },
-        { text: 'Yes, Log Out', style: 'destructive', onPress: logout },
-      ]);
-    }
-  };
-
-  const orgStatus = org?.verificationStatus;
+  const orgStatus     = org?.verificationStatus;
   const orgStatusInfo = orgStatus ? getStatusInfo(orgStatus) : null;
 
   return (
@@ -79,7 +67,7 @@ export default function ProfileScreen() {
             <Ionicons name="chevron-forward" size={18} color={COLORS.gray[300]} />
           </TouchableOpacity>
 
-          <TouchableOpacity style={styles.menuRow} onPress={handleLogout}>
+          <TouchableOpacity style={[styles.menuRow, styles.menuRowLast]} onPress={() => setLogoutModal(true)}>
             <Ionicons name="log-out-outline" size={22} color={COLORS.error} />
             <Text style={[styles.menuLabel, { color: COLORS.error }]}>Log Out</Text>
             <Ionicons name="chevron-forward" size={18} color={COLORS.gray[300]} />
@@ -87,6 +75,26 @@ export default function ProfileScreen() {
         </View>
       </ScrollView>
 
+      {/* Logout confirmation modal */}
+      <Modal visible={logoutModal} transparent animationType="fade">
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalBox}>
+            <Ionicons name="log-out-outline" size={36} color={COLORS.error} style={{ marginBottom: SPACING.md, alignSelf: 'center' }} />
+            <Text style={styles.modalTitle}>Log out?</Text>
+            <Text style={styles.modalBody}>You will be returned to the login screen.</Text>
+            <View style={styles.modalActions}>
+              <TouchableOpacity style={styles.cancelBtn} onPress={() => setLogoutModal(false)}>
+                <Text style={styles.cancelBtnText}>Cancel</Text>
+              </TouchableOpacity>
+              <TouchableOpacity style={styles.logoutBtn} onPress={logout}>
+                <Text style={styles.logoutBtnText}>Log Out</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* About modal */}
       <Modal visible={aboutModal} transparent animationType="fade">
         <View style={styles.modalOverlay}>
           <View style={styles.modalBox}>
@@ -164,6 +172,7 @@ const styles = StyleSheet.create({
     borderBottomColor: COLORS.gray[100],
     gap: SPACING.md,
   },
+  menuRowLast: { borderBottomWidth: 0 },
   menuLabel: {
     flex: 1,
     fontSize: FONTS.sizes.base,
@@ -172,7 +181,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     flex: 1,
-    backgroundColor: 'rgba(0,0,0,0.4)',
+    backgroundColor: 'rgba(0,0,0,0.45)',
     justifyContent: 'center',
     alignItems: 'center',
     padding: SPACING.xl,
@@ -188,7 +197,7 @@ const styles = StyleSheet.create({
     fontSize: FONTS.sizes.xl,
     fontWeight: '800',
     color: COLORS.gray[900],
-    marginBottom: SPACING.md,
+    marginBottom: SPACING.sm,
     textAlign: 'center',
   },
   modalBody: {
@@ -197,6 +206,36 @@ const styles = StyleSheet.create({
     textAlign: 'center',
     marginBottom: SPACING.sm,
     lineHeight: 22,
+  },
+  modalActions: {
+    flexDirection: 'row',
+    gap: SPACING.md,
+    marginTop: SPACING.base,
+  },
+  cancelBtn: {
+    flex: 1,
+    borderWidth: 1.5,
+    borderColor: COLORS.gray[300],
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  cancelBtnText: {
+    color: COLORS.gray[700],
+    fontWeight: '600',
+    fontSize: FONTS.sizes.base,
+  },
+  logoutBtn: {
+    flex: 1,
+    backgroundColor: COLORS.error,
+    borderRadius: RADIUS.md,
+    paddingVertical: SPACING.md,
+    alignItems: 'center',
+  },
+  logoutBtnText: {
+    color: COLORS.white,
+    fontWeight: '700',
+    fontSize: FONTS.sizes.base,
   },
   closeBtn: {
     marginTop: SPACING.base,
