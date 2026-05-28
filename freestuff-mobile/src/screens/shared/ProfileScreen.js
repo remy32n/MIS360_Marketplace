@@ -14,7 +14,7 @@ const ROLE_COLORS = {
   ADMIN:   { bg: '#f3e8ff', text: '#6d28d9' },
 };
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }) {
   const { user, org, logout } = useAuth();
   const [aboutModal, setAboutModal]   = useState(false);
   const [logoutModal, setLogoutModal] = useState(false);
@@ -61,6 +61,12 @@ export default function ProfileScreen() {
         )}
 
         <View style={styles.menu}>
+          <TouchableOpacity style={styles.menuRow} onPress={() => navigation.navigate('Support')}>
+            <Ionicons name="help-circle-outline" size={22} color={COLORS.gray[600]} />
+            <Text style={styles.menuLabel}>Support</Text>
+            <Ionicons name="chevron-forward" size={18} color={COLORS.gray[300]} />
+          </TouchableOpacity>
+
           <TouchableOpacity style={styles.menuRow} onPress={() => setAboutModal(true)}>
             <Ionicons name="information-circle-outline" size={22} color={COLORS.gray[600]} />
             <Text style={styles.menuLabel}>About This App</Text>

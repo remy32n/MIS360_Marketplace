@@ -8,7 +8,7 @@ import BrowseScreen from '../screens/shared/BrowseScreen';
 import ListingDetailScreen from '../screens/shared/ListingDetailScreen';
 import SavedScreen from '../screens/student/SavedScreen';
 import NotificationsScreen from '../screens/shared/NotificationsScreen';
-import ProfileScreen from '../screens/shared/ProfileScreen';
+import ProfileStack from './ProfileStack';
 
 const Tab = createBottomTabNavigator();
 const BrowseStack = createStackNavigator();
@@ -48,7 +48,7 @@ export default function StudentTabs() {
       <Tab.Screen name="Browse" component={BrowseStackScreen} />
       <Tab.Screen name="Saved" component={SavedScreen} />
       <Tab.Screen name="Notifications" component={NotificationsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>
   );
 }

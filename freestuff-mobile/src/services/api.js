@@ -50,6 +50,10 @@ export const authAPI = {
     api.get('/auth/me', {
       headers: { Authorization: `Bearer ${token}` },
     }).then(r => r.data),
+  lookupEmail: (email) =>
+    api.post('/auth/lookup-email', { email }).then(r => r.data),
+  resetPassword: (email, newPassword) =>
+    api.post('/auth/reset-password', { email, newPassword }).then(r => r.data),
 };
 
 export const listingsAPI = {

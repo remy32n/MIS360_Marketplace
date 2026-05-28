@@ -13,5 +13,7 @@ router.post("/auth/login", loginLimiter, identityController.login);
 router.post("/auth/logout", identityController.logout);
 router.get("/auth/me", requireAuth, identityController.me);
 router.get("/users/verifyOrgStatus/:orgId", requireAuth, identityController.verifyOrgStatus);
+router.post("/auth/lookup-email", identityController.lookupEmail);
+router.post("/auth/reset-password", identityController.resetPassword);
 
 export default router;

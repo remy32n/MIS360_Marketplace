@@ -11,7 +11,7 @@ import MyListingsScreen from '../screens/org/MyListingsScreen';
 import CreateListingScreen from '../screens/org/CreateListingScreen';
 import ListingSubmittedScreen from '../screens/org/ListingSubmittedScreen';
 import NotificationsScreen from '../screens/shared/NotificationsScreen';
-import ProfileScreen from '../screens/shared/ProfileScreen';
+import ProfileStack from './ProfileStack';
 
 const Tab = createBottomTabNavigator();
 const BrowseStack = createStackNavigator();
@@ -86,7 +86,7 @@ export default function OrgTabs() {
         }}
       />
       <Tab.Screen name="Notifications" component={NotificationsScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>
   );
 }

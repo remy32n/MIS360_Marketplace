@@ -9,7 +9,7 @@ import BrowseScreen from '../screens/shared/BrowseScreen';
 import ListingDetailScreen from '../screens/shared/ListingDetailScreen';
 import ActivityDashboardScreen from '../screens/admin/ActivityDashboardScreen';
 import OrgVerificationScreen from '../screens/admin/OrgVerificationScreen';
-import ProfileScreen from '../screens/shared/ProfileScreen';
+import ProfileStack from './ProfileStack';
 
 const Tab = createBottomTabNavigator();
 const BrowseStack = createStackNavigator();
@@ -51,7 +51,7 @@ export default function AdminTabs() {
       <Tab.Screen name="Browse" component={BrowseStackScreen} />
       <Tab.Screen name="Activity" component={ActivityDashboardScreen} />
       <Tab.Screen name="Orgs" component={OrgVerificationScreen} />
-      <Tab.Screen name="Profile" component={ProfileScreen} />
+      <Tab.Screen name="Profile" component={ProfileStack} />
     </Tab.Navigator>
   );
 }

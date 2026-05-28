@@ -142,6 +142,48 @@ export const identityController = {
     }
   },
 
+  async lookupEmail(req: Request, res: Response): Promise<void> {
+    try {
+      const { email } = req.body;
+      if (!email || !email.endsWith("@depaul.edu")) {
+        sendError(res, 400, "Only @depaul.edu email addresses are permitted.");
+        return;
+      }
+      const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+      if (!user) {
+        sendError(res, 404, "No account found with that email address.");
+        return;
+      }
+      res.json({ found: true, firstName: user.firstName });
+    } catch (err) {
+      sendServerError(res, "identity.lookupEmail", err);
+    }
+  },
+
+  async resetPassword(req: Request, res: Response): Promise<void> {
+    try {
+      const { email, newPassword } = req.body;
+      if (!email || !email.endsWith("@depaul.edu")) {
+        sendError(res, 400, "Only @depaul.edu email addresses are permitted.");
+        return;
+      }
+      if (!newPassword || newPassword.length < 8) {
+        sendError(res, 400, "Password must be at least 8 characters.");
+        return;
+      }
+      const user = await prisma.user.findUnique({ where: { email: email.toLowerCase().trim() } });
+      if (!user) {
+        sendError(res, 404, "No account found with that email address.");
+        return;
+      }
+      const passwordHash = await bcrypt.hash(newPassword, 12);
+      await prisma.user.update({ where: { id: user.id }, data: { passwordHash } });
+      res.json({ message: "Password reset successfully. You can now log in." });
+    } catch (err) {
+      sendServerError(res, "identity.resetPassword", err);
+    }
+  },
+
   async verifyOrgStatus(req: Request, res: Response): Promise<void> {
     try {
       const orgId = String(req.params["orgId"] ?? "");
